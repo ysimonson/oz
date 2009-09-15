@@ -13,10 +13,8 @@ class ArgumentPatchMixin(object):
         The returned value is always unicode.
         
         This method is a replacement of Tornado's default implementation to
-        fix a couple of bugs;
-        1) The full argument value is returned rather than the last character
-        2) If an argument is missing, an HTTP status code of 400 is sent (bad request)
-           rather than 404 (not found)
+        throw an HTTP status code of 400 (bad request) rather than 404 (not
+        found)
         """
         
         values = self.request.arguments.get(name, None)
@@ -27,11 +25,7 @@ class ArgumentPatchMixin(object):
             return default
         
         # Get rid of any weird control chars
-        if len(values) > 0:
-            value = values[:-1] + re.sub(r"[\x00-\x08\x0e-\x1f]", " ", values[-1])
-        else:
-            value = ''
-            
+        value = re.sub(r"[\x00-\x08\x0e-\x1f]", " ", values[-1])
         value = _unicode(value)
         if strip: value = value.strip()
         return value

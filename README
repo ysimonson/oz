@@ -67,15 +67,10 @@ will be executed. If it succeeds, the authenticated user will be available via
 RequestHandler.get_current_user().
 
 == ARGUMENT PATCH ==
-ArgumentPatchMixin fixes a couple of issues with the default implementation of
-RequestHandler.get_argument(). The method is supposed to return GET/POST
-parameters sent with the request, but AFAIK, it only returns the last character
-of a given argument. If this is wrong, please notify me! I have filed this
-defect at <<http://groups.google.com/group/python-tornado/browse_thread/thread/8
-0930acb93fd70bf#>>, but as of the time of this writing, no one has responded.
-Additionally, this mixin changes the default behavior to throw an HTTP code 400
-(bad request) instead of a 404 (not found) when a required argument is not
-provided by the client. I think this makes more sense.
+ArgumentPatchMixin replaces the default implementation of
+RequestHandler.get_argument(), which returns GET/POST parameters sent with the
+request. If a required argument is missing, it throws an HTTP code 400 (bad
+request) instead of a 404 (not found). I think this makes more sense.
 
 To use it, all you have to do is add the mixin:
 
