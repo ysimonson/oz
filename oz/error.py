@@ -1,3 +1,8 @@
+# portions adapted from Django <djangoproject.com> and web.py <webpy.org>
+# Copyright (c) 2005, the Lawrence Journal-World
+# Used under the modified BSD license:
+# http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
+
 from tornado import escape
 import sys, urlparse, pprint, traceback 
 import os, os.path
