@@ -1,0 +1,103 @@
+== ABOUT ==
+Oz is a set of classes for augmenting the functionality of the Tornado web
+framework. I will give you an e-high-five if you understand the name's
+reference.
+
+== DJANGO-STYLE ERROR MESSAGES ==
+DjangoErrorMixin provides pretty Django-like error messages when an exception
+occurs. This is very useful when you're developing your web app, but not a good
+idea to run in production. Consequently, this tool only runs when the setting
+'debug' is set to True.
+
+To use it, first enable debug in the settings:
+
+    settings = {
+        'debug': True,
+    }
+    
+    app = tornado.web.Application([
+        (r'/', HelloWorldHandler),
+    ], **settings)
+    
+    http_server = tornado.httpserver.HTTPServer(app)
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.instance().start()
+    
+Then in your handler, add the mixin:
+
+    class HelloWorldHandler(DjangoErrorMixin, RequestHandler):
+        def get(self):
+            #This will throw an AssertionError to display the pretty error page
+            assert False
+            
+            self.write('hello, world!')
+            
+Notice that DjangoErrorMixin comes before RequestHandler under the list of
+inherited classes. If it does not come first, the mixin will not work!
+
+== HTTP BASIC AUTHENTICATION ==
+BasicAuthMixin enables HTTP basic authentication. The tool is very flexible,
+as it uses a callback to check the credentials.
+
+Add the mixin in your handler and call self.get_authenticated_user() (similar to
+the auth mixins provided by Tornado) when you want to authenticate the request:
+
+    class HelloWorldHandler(BasicAuthMixin, RequestHandler):
+        def get(self):
+            self.get_authenticated_user(auth_callback, 'realm')
+            self.write('hello, world!')
+            
+The first argument for get_authenticated_user() is the callback method you wish
+to use for authentication. The second argument is the realm. An example callback
+method:
+
+    def auth_callback(request, realm, username, password):
+        if username == 'foo' and password == 'bar':
+            request.user_id = 1
+            return True
+        else:
+            return False
+            
+The method must a boolean stating whether the authentication succeeded. It takes
+in the RequestHandler object as the first argument in case you want to add some
+useful attributes (in this case, we're adding user_id).
+
+If authentication fails, the RequestHandler will finish() and no further code
+will be executed. If it succeeds, the authenticated user will be available via
+RequestHandler.get_current_user().
+
+== ARGUMENT PATCH ==
+ArgumentPatchMixin fixes a couple of issues with the default implementation of
+RequestHandler.get_argument(). The method is supposed to return GET/POST
+parameters sent with the request, but AFAIK, it only returns the last character
+of a given argument. If this is wrong, please notify me! I have filed this
+defect at <<http://groups.google.com/group/python-tornado/browse_thread/thread/8
+0930acb93fd70bf#>>, but as of the time of this writing, no one has responded.
+Additionally, this mixin changes the default behavior to throw an HTTP code 400
+(bad request) instead of a 404 (not found) when a required argument is not
+provided by the client. I think this makes more sense.
+
+To use it, all you have to do is add the mixin:
+
+    class HelloWorldHandler(ArgumentPatchMixin, RequestHandler):
+        def get(self):
+            name = self.get_argument('name')
+            self.write('hello, %s!' % name)
+            
+== NOTES ==
+ * Always put the mixins before the RequestHandler on the inheritance list. This
+   will work:
+   
+       class HelloWorldHandler(ArgumentPatchMixin, RequestHandler):
+           ...
+           
+   Whereas this will *NOT* work:
+   
+       class HelloWorldHandler(RequestHandler, ArgumentPatchMixin):
+           ...
+           
+ * You can mix and match multiple mixins. This will work fine:
+ 
+       class HelloWorldHandler(BasicAuthMixin, DjangoErrorMixin,
+           ArgumentPatchMixin, RequestHandler):
+           ...
