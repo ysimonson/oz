@@ -3,7 +3,7 @@ from oz import error
 
 import base64
 
-class ArgumentPatchMixin(object):
+class ArgumentPatchMixin(RequestHandler):
     def get_argument(self, name, default=RequestHandler._ARG_DEFAULT, strip=True):
         """Returns the value of the argument with the given name.
  
@@ -17,18 +17,10 @@ class ArgumentPatchMixin(object):
         found)
         """
         
-        values = self.request.arguments.get(name, None)
-        
-        if values is None:
-            if default is self._ARG_DEFAULT:
-                raise HTTPError(400, "Missing argument %s" % name)
-            return default
-        
-        # Get rid of any weird control chars
-        value = re.sub(r"[\x00-\x08\x0e-\x1f]", " ", values[-1])
-        value = _unicode(value)
-        if strip: value = value.strip()
-        return value
+        try:
+            return RequestHandler.get_argument(self, name, default, strip)
+        except HTTPError:
+            raise HTTPError(400, "Missing argument %s" % name)
             
 class BasicAuthMixin(object):
     def _request_auth(self, realm):
