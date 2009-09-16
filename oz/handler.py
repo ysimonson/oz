@@ -30,6 +30,8 @@ class BasicAuthMixin(object):
         self.set_header('WWW-Authenticate', 'Basic realm="%s"' % realm)
         self.finish()
         
+        return False
+        
     def get_authenticated_user(self, auth_func, realm):
         """Requests HTTP basic authentication credentials from the client, or
         authenticates the user if credentials are provided."""
@@ -44,6 +46,7 @@ class BasicAuthMixin(object):
             
             if auth_func(self, realm, username, password):
                 self._current_user = username
+                return True
             else:
                 return self._request_auth(realm)
         except Exception, e:

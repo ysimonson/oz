@@ -44,7 +44,9 @@ the auth mixins provided by Tornado) when you want to authenticate the request:
 
     class HelloWorldHandler(BasicAuthMixin, RequestHandler):
         def get(self):
-            self.get_authenticated_user(auth_callback, 'realm')
+            if not self.get_authenticated_user(auth_callback, 'realm'):
+                return False
+            
             self.write('hello, world!')
             
 The first argument for get_authenticated_user() is the callback method you wish
