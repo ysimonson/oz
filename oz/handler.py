@@ -51,17 +51,48 @@ class BasicAuthMixin(object):
                 return self._request_auth(realm)
         except Exception, e:
             return self._request_auth(realm)
+            
+def basic_auth(realm, auth_func):
+    """A decorator that can be used on methods that you wish to protect with
+    HTTP basic"""
+    def basic_auth_decorator(func):
+        def func_replacement(self, *args, **kwargs):
+            if self.get_authenticated_user(auth_func, realm):
+                return func(self, *args, **kwargs)
+        
+        return func_replacement
+    return basic_auth_decorator
 
+class CustomErrorMixin(RequestHandler):
+    def _handle_request_exception(self, e):
+        try:
+            finished = self.handle_error(e)
+        except Exception, new_error:
+            e = new_error
+            finished = False
+            
+        if not finished: RequestHandler._handle_request_exception(self, e)
+        
 class DjangoErrorMixin(RequestHandler):
     def get_error_html(self, status_code):
         self.require_setting('debug')
         debug = self.application.settings['debug']
         
         if debug:
-            error.render_error(self)
+            override_key = self.application.settings.get('output_type_override', None)
+            override = self.get_argument(override_key, None) if override_key != None else 'html'
+            
+            if override == 'txt':
+                error.render_txt(self)
+            elif override == 'verbose_txt':
+                error.render_verbose_txt(self)
+            else:
+                error.render_html(self)
         else:
             return "<html><title>%(code)d: %(message)s</title>" \
                    "<body>%(code)d: %(message)s</body></html>" % {
                 "code": status_code,
                 "message": httplib.responses[status_code],
             }
+
+def debug(): raise error.DebugBreakException()

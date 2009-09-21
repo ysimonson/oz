@@ -182,17 +182,20 @@
                 </p>
   
                 <h2>Request information</h2>
-                <h3>INPUT</h3>
+                <h3>HEADERS</h3>
+                {{dicttable(request_headers)}}
+                
+                <h3>BODY</h3>
                 {{escape(request_input)}}
  
                 <h3 id="cookie-info">COOKIES</h3>
                 {{dicttable(request_cookies)}}
             {%end%}
         </div>
- 
+        
         <div id="explanation">
             <p>
-                You're seeing this error because you have the <code>debug</code> setting
+                You're seeing this because you have the <code>debug</code> setting
                 set to <code>True</code>. Set that to <code>False</code> if you don't to see this.
             </p>
         </div>
