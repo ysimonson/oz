@@ -21,7 +21,7 @@ class ArgumentPatchMixin(RequestHandler):
             return RequestHandler.get_argument(self, name, default, strip)
         except HTTPError:
             raise HTTPError(400, "Missing argument %s" % name)
-            
+
 class BasicAuthMixin(object):
     def _request_auth(self, realm):
         if self._headers_written: return Exception('headers have already been written')
@@ -96,3 +96,6 @@ class DjangoErrorMixin(RequestHandler):
             }
 
 def debug(): raise error.DebugBreakException()
+
+class OzHandler(ArgumentPatchMixin, BasicAuthMixin, CustomErrorMixin, DjangoErrorMixin, RequestHandler):
+    pass

@@ -4,8 +4,8 @@
 # http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
 
 from tornado import escape
-import sys, urlparse, pprint, traceback 
-import os, os.path
+import sys, urlparse, pprint, traceback
+import os, os.path, base64
 
 whereami = os.path.join(os.getcwd(), __file__)
 whereami = os.path.sep.join(whereami.split(os.path.sep)[:-1])
@@ -30,8 +30,12 @@ def dicttable_items(items, kls='req', id=None):
         output += '><thead><tr><th>Variable</th><th>Value</th></tr></thead><tbody>'
         
         for k, v in items:
+            try:
                 output += '<tr><td>%s</td><td class="code"><div>%s</div></td></tr>' \
                           % (k, prettify(v))
+            except UnicodeDecodeError, e:
+                output += '<tr><td>%s (in base 64)</td><td class="code"><div>%s</div></td></tr>' \
+                          % (k, base64.b64encode(v))
                 
         output += '</tbody></table>'
     else:
@@ -45,19 +49,35 @@ def dicttable_txt(d, tabbing):
 def dicttable_items_txt(items, tabbing):
     if len(items) == 0: return ''
     
-    max_key_length = len(max([k for (k, v) in items], key=len))
+    formatted_items = []
+    max_key_length = 0
+    
+    for i in range(0, len(items)):
+        k = items[i][0]
+        v = items[i][1]
+        
+        try:
+            formatted_items.append([k, unicode(v)])
+        except UnicodeDecodeError:
+            k += ' (in base 64)'
+            formatted_items.append([k, base64.b32encode(v)])
+        
+        if len(k) > max_key_length: max_key_length = len(k)
+    
     tabbing = ' ' * tabbing
     output = ''
         
-    for k, v in items:
+    for k, v in formatted_items:
         spaces = ' ' * (max_key_length - len(k))
         output += '%s%s%s = %s\n' % (tabbing, k, spaces, v)
         
     return output
 
 def prettify(x):
-    try: 
-        out = pprint.pformat(x)
+    try:
+        out = pprint.pformat(unicode(x))
+    except UnicodeDecodeError, e:
+        raise e
     except Exception, e: 
         out = '[could not display: <' + e.__class__.__name__ + \
               ': '+str(e)+'>]'
