@@ -75,19 +75,18 @@ class CustomErrorMixin(RequestHandler):
         
 class DjangoErrorMixin(RequestHandler):
     def get_error_html(self, status_code):
-        self.require_setting('debug')
-        debug = self.application.settings['debug']
+        debug = self.application.settings.get('debug', False)
         
         if debug:
             override_key = self.application.settings.get('output_type_override', None)
             override = self.get_argument(override_key, None) if override_key != None else 'html'
             
             if override == 'txt':
-                error.render_txt(self)
+                return error.render_txt(self)
             elif override == 'verbose_txt':
-                error.render_verbose_txt(self)
+                return error.render_verbose_txt(self)
             else:
-                error.render_html(self)
+                return error.render_html(self)
         else:
             return "<html><title>%(code)d: %(message)s</title>" \
                    "<body>%(code)d: %(message)s</body></html>" % {

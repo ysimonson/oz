@@ -7,6 +7,11 @@ from tornado import escape
 import sys, urlparse, pprint, traceback
 import os, os.path, base64
 
+try:
+    from cStringIO import StringIO
+except:
+    from StringIO import StringIO
+
 whereami = os.path.join(os.getcwd(), __file__)
 whereami = os.path.sep.join(whereami.split(os.path.sep)[:-1])
  
@@ -184,11 +189,10 @@ def render_html(handler):
         'dicttable_items': dicttable_items
     }
     
-    handler.render('error_template.html', **params)
+    return handler.render_string('error_template.html', **params)
     
 def render_txt(handler):
-    error = traceback.format_exc()
-    handler.write(error)
+    return traceback.format_exc()
     
 def _writeln(handler, text):
     handler.write(text)
@@ -199,25 +203,29 @@ def render_verbose_txt(handler):
     is_debug = isinstance(exception_value, DebugBreakException)
     frames = _get_frames(tback, is_debug)
     
-    _writeln(handler, 'Error:  ' + str(exception_type))
-    _writeln(handler, 'Desc:   ' + str(exception_value))
-    _writeln(handler, '*' * 80)
+    buffer = StringIO()
     
-    _writeln(handler, 'Traceback (most recent call last):')
+    _writeln(buffer, 'Error:  ' + str(exception_type))
+    _writeln(buffer, 'Desc:   ' + str(exception_value))
+    _writeln(buffer, '*' * 80)
+    
+    _writeln(buffer, 'Traceback (most recent call last):')
     for frame in frames:
-        _writeln(handler, '  File "%s", line %s, in %s' % (frame.filename, frame.lineno, frame.function))
-        if frame.context_line: _writeln(handler, '    ' + frame.context_line.strip())
-        if frame.vars: _writeln(handler, dicttable_txt(frame.vars, 6))
+        _writeln(buffer, '  File "%s", line %s, in %s' % (frame.filename, frame.lineno, frame.function))
+        if frame.context_line: _writeln(buffer, '    ' + frame.context_line.strip())
+        if frame.vars: _writeln(buffer, dicttable_txt(frame.vars, 6))
     
-    _writeln(handler, 'Response headers:')
-    _writeln(handler, dicttable_items_txt(_get_response_headers(handler), 0))
+    _writeln(buffer, 'Response headers:')
+    _writeln(buffer, dicttable_items_txt(_get_response_headers(handler), 0))
     
-    _writeln(handler, '\nResponse body:')
-    _writeln(handler, _get_response_output(handler))
+    _writeln(buffer, '\nResponse body:')
+    _writeln(buffer, _get_response_output(handler))
     
-    _writeln(handler, '*' * 80)
-    _writeln(handler, '\nRequest input:')
-    _writeln(handler, handler.request.body)
+    _writeln(buffer, '*' * 80)
+    _writeln(buffer, '\nRequest input:')
+    _writeln(buffer, handler.request.body)
     
-    _writeln(handler, '\nRequest cookies:')
-    _writeln(handler, dicttable_txt(handler.cookies, 0))
+    _writeln(buffer, '\nRequest cookies:')
+    _writeln(buffer, dicttable_txt(handler.cookies, 0))
+    
+    return buffer.getvalue()
