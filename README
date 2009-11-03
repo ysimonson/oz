@@ -44,33 +44,6 @@ view html appropriately. Setting the format to txt will provide a simple Python
 stack trace. verbose_txt is roughly a textual equivalent of the Django error
 page. html is the default Dango error page output.
 
-== CUSTOM ERROR HANDLING ==
-By default, Tornado turns any error raised during execution into an HTTP 500
-response. The CustomErrorMixin allows your handler to replace this
-functionality such that when an exception occurs, it will first be routed to a
-custom method which can decide what to do with it from there.
-
-Add the mixin to your handler and implement handle_error(self, error):
-
-    class HelloWorldHandler(CustomErrorMixin, RequestHandler):
-        def handle_error(self, error):
-            if isinstance(error, AssertionError):
-                raise web.HTTPError(400, 'bad request')
-            else:
-                return False
-         
-        def get(self):
-            #This will throw an AssertionError to display the pretty error page
-            assert False
-            
-            self.write('hello, world!')
-             
-handle_error should either return a boolean or raise an error. If it returns
-False, the default Tornado functionality will be executed on the source error.
-If the method raises a new error, that error will be used instead by Tornado's
-default error handler. If it returns True, no further error handling logic will
-be executed.
-
 == HTTP BASIC AUTHENTICATION ==
 BasicAuthMixin enables HTTP basic authentication. The tool is very flexible,
 as it uses a callback to check the credentials.

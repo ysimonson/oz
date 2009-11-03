@@ -63,18 +63,9 @@ def basic_auth(realm, auth_func):
         return func_replacement
     return basic_auth_decorator
 
-class CustomErrorMixin(RequestHandler):
-    def _handle_request_exception(self, e):
-        try:
-            finished = self.handle_error(e)
-        except Exception, new_error:
-            e = new_error
-            finished = False
-            
-        if not finished: RequestHandler._handle_request_exception(self, e)
-        
 class DjangoErrorMixin(RequestHandler):
     def get_error_html(self, status_code):
+        """Replaces the default Tornado error page with a Django-styled one"""
         debug = self.application.settings.get('debug', False)
         
         if debug:
@@ -94,7 +85,9 @@ class DjangoErrorMixin(RequestHandler):
                 "message": httplib.responses[status_code],
             }
 
-def debug(): raise error.DebugBreakException()
+def debug():
+    """Used to create debug breakpoints in code"""
+    raise error.DebugBreakException()
 
-class OzHandler(ArgumentPatchMixin, BasicAuthMixin, CustomErrorMixin, DjangoErrorMixin, RequestHandler):
+class OzHandler(ArgumentPatchMixin, BasicAuthMixin, DjangoErrorMixin, RequestHandler):
     pass
