@@ -24,7 +24,7 @@ class ArgumentPatchMixin(RequestHandler):
 
 class BasicAuthMixin(object):
     def _request_auth(self, realm):
-        if self._headers_written: return Exception('headers have already been written')
+        if self._headers_written: raise Exception('headers have already been written')
         
         self.set_status(401)
         self.set_header('WWW-Authenticate', 'Basic realm="%s"' % realm)
