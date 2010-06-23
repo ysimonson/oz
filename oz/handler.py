@@ -1,5 +1,5 @@
 from tornado.web import *
-from oz import error
+import error
 
 import base64
 
@@ -64,7 +64,7 @@ def basic_auth(realm, auth_func):
     return basic_auth_decorator
 
 class DjangoErrorMixin(RequestHandler):
-    def get_error_html(self, status_code):
+    def get_error_html(self, status_code, **kwargs):
         """Replaces the default Tornado error page with a Django-styled one"""
         debug = self.application.settings.get('debug', False)
         
@@ -73,8 +73,10 @@ class DjangoErrorMixin(RequestHandler):
             override = self.get_argument(override_key, None) if override_key != None else 'html'
             
             if override == 'txt':
+                self.set_header("Content-Type", 'text/plain')
                 return error.render_txt(self)
             elif override == 'verbose_txt':
+                self.set_header("Content-Type", 'text/plain')
                 return error.render_verbose_txt(self)
             else:
                 return error.render_html(self)
