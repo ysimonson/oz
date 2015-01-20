@@ -1,3 +1,8 @@
+== DEPRECATION NOTICE ==
+
+This version of Oz is deprecated. Please see the new Oz at:
+[http://github.com/dailymuse/oz](http://github.com/dailymuse/oz)
+
 == ABOUT ==
 Oz is a set of classes for augmenting the functionality of the Tornado web
 framework. I will give you an e-high-five if you understand the name's
