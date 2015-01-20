@@ -1,14 +1,17 @@
-== DEPRECATION NOTICE ==
+# DEPRECATION NOTICE
 
-This version of Oz is deprecated. Please see the new Oz at:
-[http://github.com/dailymuse/oz](http://github.com/dailymuse/oz)
+This version of Oz is deprecated. Much of the functionality has been
+supplanted both by improvements in tornado itself and in its surrounding
+ecosystem.
 
-== ABOUT ==
+For a modern rehash, please see [the new oz](http://github.com/dailymuse/oz).
+
+# about
 Oz is a set of classes for augmenting the functionality of the Tornado web
 framework. I will give you an e-high-five if you understand the name's
 reference.
 
-== DJANGO-STYLE ERROR MESSAGES ==
+## django-style error messages
 DjangoErrorMixin provides pretty Django-like error messages when an exception
 occurs. This is very useful when you're developing your web app, but not a good
 idea to run in production. Consequently, this tool only runs when the setting
@@ -49,7 +52,7 @@ view html appropriately. Setting the format to txt will provide a simple Python
 stack trace. verbose_txt is roughly a textual equivalent of the Django error
 page. html is the default Dango error page output.
 
-== HTTP BASIC AUTHENTICATION ==
+## http basic authentication
 BasicAuthMixin enables HTTP basic authentication. The tool is very flexible,
 as it uses a callback to check the credentials.
 
@@ -92,7 +95,7 @@ as an alternate use case for the mixin. Example:
 
 This is equivalent to the previous implementation example.
 
-== ARGUMENT PATCH ==
+## argument patch
 ArgumentPatchMixin replaces the default implementation of
 RequestHandler.get_argument(), which returns GET/POST parameters sent with the
 request. If a required argument is missing, it throws an HTTP code 400 (bad
@@ -105,7 +108,7 @@ To use it, all you have to do is add the mixin:
             name = self.get_argument('name')
             self.write('hello, %s!' % name)
             
-== NOTES ==
+## notes
  * Always put the mixins before the RequestHandler on the inheritance list. This
    will work:
    
